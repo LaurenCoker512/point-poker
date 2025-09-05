@@ -1,0 +1,36 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id          String   @id @default(cuid())
+  name        String?  // e.g., "Sprint 12 Planning"
+  createdAt   DateTime @default(now())
+  isRevealed  Boolean  @default(false)
+  // Relations
+  users       User[]
+  @@map("boards")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  isModerator Boolean @default(false)
+  vote      String?     // The user's vote for the current topic (e.g., "5", "?", "☕", null)
+  hasVoted  Boolean  @default(false)
+  // Relations
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  @@map("users")
+}
