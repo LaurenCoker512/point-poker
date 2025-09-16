@@ -7,7 +7,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const boardId = params.id;
-  const nestRes = await fetch(`${NEST_API_URL}/${boardId}`);
+  const userId = req.nextUrl.searchParams.get("userId");
+  const url = userId
+    ? `${NEST_API_URL}/${boardId}?userId=${encodeURIComponent(userId)}`
+    : `${NEST_API_URL}/${boardId}`;
+  const nestRes = await fetch(url);
   const data = await nestRes.json();
   return NextResponse.json(data, { status: nestRes.status });
 }

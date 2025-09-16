@@ -43,6 +43,25 @@ export default function BoardPage() {
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
+    async function fetchBoard() {
+      const userId = localStorage.getItem(`board:${boardId}:userId`);
+      const res = await fetch(`/api/board/${boardId}?userId=${userId}`);
+      if (res.ok) {
+        const board = await res.json();
+        setUsers(board.users);
+        setShowResults(board.isRevealed);
+        if (currentUser) {
+          setIsModerator(
+            board.users.find((u: User) => u.id === currentUser.id)
+              ?.isModerator ?? false
+          );
+        }
+      }
+    }
+    fetchBoard();
+  }, [boardId]);
+
+  useEffect(() => {
     const storedUserId = localStorage.getItem(`board:${boardId}:userId`);
     const storedUserName = localStorage.getItem(`board:${boardId}:userName`);
     const storedIsModerator = localStorage.getItem(
@@ -173,7 +192,7 @@ export default function BoardPage() {
     if (!socket) return;
 
     if (userName && hasJoined) {
-      socket.emit("boardReset");
+      socket.emit("resetBoard");
     }
   };
 
