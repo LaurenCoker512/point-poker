@@ -69,7 +69,6 @@ export default function BoardPage() {
     }
 
     const handleUserListUpdated = (users: User[]) => {
-      console.log(users);
       setUsers(users);
       const found = users.find((u) => u.name === userName);
       if (found) {
@@ -84,11 +83,35 @@ export default function BoardPage() {
       }
     };
 
+    const handleShowResults = (data: {
+      id: string;
+      name: string;
+      isRevealed: boolean;
+      users: User[];
+    }) => {
+      setUsers(data.users);
+      setShowResults(true);
+    };
+
+    const handleBoardReset = (data: {
+      id: string;
+      name: string;
+      isRevealed: boolean;
+      users: User[];
+    }) => {
+      setUsers(data.users);
+      setShowResults(false);
+      setSelectedPoint(undefined);
+    };
+
     socket.on("userListUpdated", handleUserListUpdated);
+    socket.on("votesRevealed", handleShowResults);
+    socket.on("boardReset", handleBoardReset);
 
     return () => {
       socket.off("userListUpdated", handleUserListUpdated);
-      // TODO: socket.disconnect(); ?
+      socket.off("votesRevealed", handleShowResults);
+      socket.off("boardReset", handleBoardReset);
     };
   }, [boardId, userName, hasJoined]);
 
@@ -98,6 +121,7 @@ export default function BoardPage() {
       if (res.ok) {
         const board = await res.json();
         setUsers(board.users);
+        setShowResults(board.isRevealed);
         if (currentUser) {
           setIsModerator(
             board.users.find((u: User) => u.id === currentUser.id)
@@ -133,34 +157,24 @@ export default function BoardPage() {
     if (!socket) return;
 
     socket.emit("submitVote", { vote: point });
-
-    // setUsers((prev) =>
-    //   prev.map((user) =>
-    //     user.id === currentUser?.id
-    //       ? { ...user, vote: point, hasVoted: true }
-    //       : user
-    //   )
-    // );
-
-    // if (currentUser) {
-    //   setCurrentUser({ ...currentUser, vote: point, hasVoted: true });
-    // }
   };
 
   const revealResults = () => {
-    setShowResults(true);
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    if (userName && hasJoined) {
+      socket.emit("revealVotes");
+    }
   };
 
   const resetVoting = () => {
-    setShowResults(false);
-    setSelectedPoint(undefined);
-    setUsers((prev) =>
-      prev.map((user) => ({
-        ...user,
-        vote: undefined,
-        hasVoted: false,
-      }))
-    );
+    const socket = socketRef.current;
+    if (!socket) return;
+
+    if (userName && hasJoined) {
+      socket.emit("boardReset");
+    }
   };
 
   const getVoteData = (): VoteData[] => {
@@ -168,6 +182,9 @@ export default function BoardPage() {
       .filter((user) => user.vote !== undefined)
       .map((user) => user.vote);
     const voteCounts: Record<string, number> = {};
+    console.log("getVoteData");
+    console.log(votes);
+    console.log(voteCounts);
 
     votes.forEach((vote) => {
       const key = vote?.toString() || "unknown";
@@ -175,9 +192,8 @@ export default function BoardPage() {
     });
 
     return Object.entries(voteCounts).map(([value, count], index) => ({
-      value: count,
+      value,
       count,
-      name: value,
       color: COLORS[index % COLORS.length],
     }));
   };

@@ -1,5 +1,5 @@
 export interface VoteData {
-  value: number;
+  value: string;
   count: number;
   color: string;
 }

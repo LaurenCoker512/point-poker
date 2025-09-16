@@ -12,6 +12,12 @@ export default function ParticipantsList({
   currentUser,
   showResults,
 }: ParticipantsListProps) {
+  const sortedUsers = [...users].sort((a, b) => {
+    if (a.isModerator && !b.isModerator) return -1;
+    if (!a.isModerator && b.isModerator) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="lg:col-span-1">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -23,7 +29,7 @@ export default function ParticipantsList({
         </div>
 
         <div className="space-y-3">
-          {users.map((user) => (
+          {sortedUsers.map((user) => (
             <div
               key={user.id}
               className={`flex items-center justify-between p-3 rounded-lg ${

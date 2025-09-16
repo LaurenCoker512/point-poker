@@ -37,16 +37,16 @@ export class EventsGateway
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    const userId = client.data.userId;
-    const boardId = client.data.boardId;
-    if (userId && boardId) {
-      await this.prisma.user.delete({
-        where: { id: userId },
-      });
+    // const userId = client.data.userId;
+    // const boardId = client.data.boardId;
+    // if (userId && boardId) {
+    //   await this.prisma.user.delete({
+    //     where: { id: userId },
+    //   });
 
-      const updatedBoard = await this.boardService.findOne(boardId);
-      client.to(boardId).emit('userListUpdated', updatedBoard.users);
-    }
+    //   const updatedBoard = await this.boardService.findOne(boardId);
+    //   client.to(boardId).emit('userListUpdated', updatedBoard.users);
+    // }
   }
 
   @SubscribeMessage('joinBoard')
@@ -103,26 +103,68 @@ export class EventsGateway
     }
 
     await this.prisma.user.update({
-      where: { id: userId },
+      where: { id: userId, boardId },
       data: { vote: payload.vote, hasVoted: true },
     });
 
     const updatedBoard = await this.boardService.findOne(boardId);
-
     client.to(boardId).emit('userListUpdated', updatedBoard.users);
     client.emit('userListUpdated', updatedBoard.users);
   }
 
   @SubscribeMessage('revealVotes')
   async handleRevealVotes(@ConnectedSocket() client: Socket) {
-    // TODO:
-    // 1. Get user & board from client.data
-    // 2. Check if user is moderator (fetch user from DB to verify isModerator flag)
-    // 3. Use boardService.setRevealed(boardId, true)
-    // 4. Fetch the complete, unsanitized board data
-    // 5. server.to(boardId).emit('votesRevealed', unsanitizedBoardDataWithVotes);
+    console.log('Reveal votes!');
+    const userId = client.data.userId;
+    const boardId = client.data.boardId;
+
+    console.log(userId);
+    console.log(boardId);
+
+    if (!userId || !boardId) {
+      client.emit('error', { message: 'Not joined to a board' });
+      return;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, boardId },
+    });
+
+    if (!user || !user.isModerator) {
+      client.emit('error', { message: 'Not authorized' });
+      return;
+    }
+
+    await this.boardService.setRevealed(boardId);
+
+    const unsanitizedBoardData = await this.boardService.findOne(boardId);
+    client.to(boardId).emit('votesRevealed', unsanitizedBoardData);
+    client.emit('votesRevealed', unsanitizedBoardData);
   }
 
   @SubscribeMessage('resetBoard')
-  async resetBoard(@ConnectedSocket() client: Socket) {}
+  async resetBoard(@ConnectedSocket() client: Socket) {
+    const userId = client.data.userId;
+    const boardId = client.data.boardId;
+
+    if (!userId || !boardId) {
+      client.emit('error', { message: 'Not joined to a board' });
+      return;
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, boardId },
+    });
+
+    if (!user || !user.isModerator) {
+      client.emit('error', { message: 'Not authorized' });
+      return;
+    }
+
+    await this.boardService.resetVotes(boardId);
+
+    const unsanitizedBoardData = await this.boardService.findOne(boardId);
+    client.to(boardId).emit('boardReset', unsanitizedBoardData);
+    client.emit('boardReset', unsanitizedBoardData);
+  }
 }

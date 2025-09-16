@@ -19,6 +19,33 @@ export default function ResultsPanel({
   isModerator,
   resetVoting,
 }: ResultsPanelProps) {
+  const renderLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    index,
+  }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-(midAngle ?? 0) * RADIAN);
+    const y = cy + radius * Math.sin(-(midAngle ?? 0) * RADIAN);
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="#fff"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={18}
+      >
+        {voteData[index].count}
+      </text>
+    );
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
@@ -33,10 +60,11 @@ export default function ResultsPanel({
                 data={voteData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
                 outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
+                dataKey="count"
+                nameKey="value"
+                label={renderLabel}
+                labelLine={false}
               >
                 {voteData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -75,7 +103,7 @@ export default function ResultsPanel({
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={resetVoting}
-            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-medium rounded-lg transition-colors"
+            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
           >
             Start New Vote
           </button>
