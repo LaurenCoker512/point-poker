@@ -47,7 +47,7 @@ describe('BoardService', () => {
 
     expect(prismaServiceMock.board.create).toHaveBeenCalled();
     expect(prismaServiceMock.user.create).toHaveBeenCalled();
-    expect(result).toEqual({ id: 'board1' });
+    expect(result).toEqual({ id: 'board1', userId: 'user1' });
   });
 
   it('should find one board', async () => {
@@ -85,7 +85,7 @@ describe('BoardService', () => {
 
     expect(prismaServiceMock.user.updateMany).toHaveBeenCalledWith({
       where: { boardId: 'board1' },
-      data: { vote: null },
+      data: { vote: null, hasVoted: false },
     });
     expect(prismaServiceMock.board.updateMany).toHaveBeenCalledWith({
       where: { id: 'board1' },
