@@ -50,11 +50,12 @@ export default function BoardPage() {
         const board = await res.json();
         setUsers(board.users);
         setShowResults(board.isRevealed);
-        if (currentUser) {
-          setIsModerator(
-            board.users.find((u: User) => u.id === currentUser.id)
-              ?.isModerator ?? false
-          );
+
+        const foundUser = board.users.find((u: User) => u.id === userId);
+        if (foundUser) {
+          setCurrentUser(foundUser);
+          setIsModerator(foundUser.isModerator ?? false);
+          setSelectedPoint(foundUser.vote);
         }
       }
     }
@@ -198,12 +199,11 @@ export default function BoardPage() {
 
   const getVoteData = (): VoteData[] => {
     const votes = users
-      .filter((user) => user.vote !== undefined)
+      .filter(
+        (user) => user.hasVoted && user.vote !== undefined && user.vote !== null
+      )
       .map((user) => user.vote);
     const voteCounts: Record<string, number> = {};
-    console.log("getVoteData");
-    console.log(votes);
-    console.log(voteCounts);
 
     votes.forEach((vote) => {
       const key = vote?.toString() || "unknown";

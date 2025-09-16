@@ -53,7 +53,7 @@ export default function VotingPanel({
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={revealResults}
-            disabled={users.some((user) => !user.hasVoted)}
+            disabled={users.every((user) => !user.hasVoted)}
             className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             Reveal Results

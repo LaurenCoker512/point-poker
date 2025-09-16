@@ -27,7 +27,7 @@ export class BoardService {
     });
   }
 
-  async findOne(id: string, requestingUserId?: string) {
+  async findOne(id: string, userId?: string) {
     const board = await this.prisma.board.findUnique({
       where: { id },
       include: {
@@ -48,10 +48,10 @@ export class BoardService {
     }
 
     // If votes not yet revealed, clear each user's vote value
-    if (!board.isRevealed && requestingUserId) {
+    if (!board.isRevealed && userId) {
       board.users = board.users.map((user) => ({
         ...user,
-        vote: user.id === requestingUserId ? user.vote : null,
+        vote: user.id === userId ? user.vote : null,
       }));
     } else if (!board.isRevealed) {
       board.users = board.users.map((user) => ({

@@ -114,12 +114,8 @@ export class EventsGateway
 
   @SubscribeMessage('revealVotes')
   async handleRevealVotes(@ConnectedSocket() client: Socket) {
-    console.log('Reveal votes!');
     const userId = client.data.userId;
     const boardId = client.data.boardId;
-
-    console.log(userId);
-    console.log(boardId);
 
     if (!userId || !boardId) {
       client.emit('error', { message: 'Not joined to a board' });

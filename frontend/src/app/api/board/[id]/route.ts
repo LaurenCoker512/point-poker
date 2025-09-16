@@ -4,8 +4,9 @@ const NEST_API_URL = process.env.NEST_API_URL || "http://localhost:3005/board";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const boardId = params.id;
   const userId = req.nextUrl.searchParams.get("userId");
   const url = userId
