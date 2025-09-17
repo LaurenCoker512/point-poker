@@ -151,7 +151,7 @@ export default function BoardPage() {
       }
     }
     fetchBoard();
-  }, [boardId, currentUser]);
+  }, [boardId]);
 
   const handleCopyLink = () => {
     if (typeof window === "undefined") return;
