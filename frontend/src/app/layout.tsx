@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Just Pick 3 - Agile Story Point Poker",
   description: "Simple and effective story point estimation for agile teams",
+  icons: {
+    icon: "/three-clubs_6770263.png",
+  },
 };
 
 export default function RootLayout({

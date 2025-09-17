@@ -97,7 +97,7 @@ cp .env.example .env.local
 Example contents for `.env.local`:
 
 ```
-NEST_PUBLIC_BACKEND_URL=http://localhost:3005
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3005
 ```
 
 #### c. Start the frontend server

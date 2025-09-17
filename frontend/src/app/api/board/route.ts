@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const NEST_API_URL =
-  process.env.NEST_PUBLIC_BACKEND_URL || "http://localhost:3005/board";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3005/board";
 
 export async function POST(req: NextRequest) {
+  console.log(process.env.NEXT_PUBLIC_BACKEND_URL);
   const body = await req.json();
 
   const nestRes = await fetch(NEST_API_URL, {

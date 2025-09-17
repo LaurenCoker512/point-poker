@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const NEST_API_URL =
-  process.env.NEST_PUBLIC_BACKEND_URL || "http://localhost:3005/board";
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3005/board";
 
 export async function GET(
   req: NextRequest,

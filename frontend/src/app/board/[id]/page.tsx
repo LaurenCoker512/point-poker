@@ -79,7 +79,7 @@ export default function BoardPage() {
   useEffect(() => {
     if (!socketRef.current) {
       const BACKEND_URL =
-        process.env.NEST_PUBLIC_BACKEND_URL || "http://localhost:3005";
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3005";
       socketRef.current = io(BACKEND_URL);
     }
     const socket = socketRef.current;
