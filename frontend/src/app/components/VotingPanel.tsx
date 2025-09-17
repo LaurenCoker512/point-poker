@@ -7,7 +7,6 @@ type VotingPanelProps = {
   isModerator: boolean;
   revealResults: () => void;
   users: User[];
-  currentUser: User | null;
 };
 
 export default function VotingPanel({
@@ -17,7 +16,6 @@ export default function VotingPanel({
   isModerator,
   revealResults,
   users,
-  currentUser,
 }: VotingPanelProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">

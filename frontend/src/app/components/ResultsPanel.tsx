@@ -14,20 +14,29 @@ type ResultsPanelProps = {
   resetVoting: () => void;
 };
 
+type PieLabelRenderProps = {
+  cx?: number;
+  cy?: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+  index?: number;
+};
+
 export default function ResultsPanel({
   voteData,
   isModerator,
   resetVoting,
 }: ResultsPanelProps) {
   const renderLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    index,
-  }: any) => {
+    cx = 0,
+    cy = 0,
+    midAngle = 0,
+    innerRadius = 0,
+    outerRadius = 0,
+    index = 0,
+  }: PieLabelRenderProps) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-(midAngle ?? 0) * RADIAN);

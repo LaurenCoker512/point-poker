@@ -151,7 +151,7 @@ export default function BoardPage() {
       }
     }
     fetchBoard();
-  }, [boardId]);
+  }, [boardId, currentUser]);
 
   const handleCopyLink = () => {
     if (typeof window === "undefined") return;
@@ -274,7 +274,6 @@ export default function BoardPage() {
                 isModerator={isModerator}
                 revealResults={revealResults}
                 users={users}
-                currentUser={currentUser}
               />
             ) : (
               <ResultsPanel
