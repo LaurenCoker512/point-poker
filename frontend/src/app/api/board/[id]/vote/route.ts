@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const NEST_API_URL = process.env.NEST_API_URL || "http://localhost:3005/board";
+const NEST_API_URL =
+  process.env.NEST_PUBLIC_BACKEND_URL || "http://localhost:3005/board";
 
-export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
+) {
   const params = await props.params;
   const boardId = params.id;
   const { userId, vote } = await req.json();
