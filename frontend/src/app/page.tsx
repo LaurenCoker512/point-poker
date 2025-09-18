@@ -196,7 +196,7 @@ export default function Home() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded bg-primary-600 text-white font-semibold hover:bg-primary-700 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-800 font-semibold hover:bg-primary-700 cursor-pointer disabled:cursor-not-allowed"
                   disabled={userName.trim().length < 1}
                 >
                   Create
