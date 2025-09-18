@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [userName, setUserName] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
   const modalRef = useRef<HTMLDivElement>(null);
@@ -51,6 +52,8 @@ export default function Home() {
       return;
     }
 
+    setLoading(true);
+
     try {
       const response = await fetch("/api/board", {
         method: "POST",
@@ -68,6 +71,7 @@ export default function Home() {
 
       router.push(`/board/${newBoard.id}`);
     } catch (error) {
+      setLoading(false);
       console.error(`Error creating board: ${error}`);
     }
   };
@@ -220,7 +224,6 @@ export default function Home() {
             <form
               onSubmit={(e) => {
                 handleCreateBoard(e);
-                if (userName.trim()) setShowModal(false);
               }}
             >
               {error && (
@@ -255,10 +258,14 @@ export default function Home() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded text-primary-900 dark:text-white bg-primary-600 dark:bg-primary-500 font-semibold hover:bg-primary-700 dark:hover:bg-primary-600 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className={`px-4 py-2 rounded text-primary-900 dark:text-white bg-primary-600 dark:bg-primary-500 font-semibold hover:bg-primary-700 dark:hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 ${
+                    userName.trim().length < 1 || loading
+                      ? "disabled:cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
                   disabled={userName.trim().length < 1}
                 >
-                  Create
+                  {loading ? "Creating..." : "Create"}
                 </button>
               </div>
             </form>
