@@ -1,29 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { io, Socket } from "socket.io-client";
 import type { User } from "@/app/types/User";
-import type { VoteData } from "@/app/types/VoteData";
 import JoinBoardForm from "@/app/components/JoinBoardForm";
 import ParticipantsList from "@/app/components/ParticipantsList";
 import VotingPanel from "@/app/components/VotingPanel";
 import ResultsPanel from "@/app/components/ResultsPanel";
-
-const fibonacciPoints = [1, 2, 3, 5, 8, 13, 21, 34, "?", "☕"];
-
-const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
-  "#FF6B6B",
-  "#4ECDC4",
-  "#45B7D1",
-  "#F9A826",
-];
+import { useBoardSocket } from "./hooks/useBoardSocket";
+import { useBoardFetch } from "./hooks/useBoardFetch";
+import { useRestoreUserSession } from "./hooks/useRestoreUserSession";
+import { getVoteData } from "./utils/getVoteData";
+import { handleCopyLink } from "./utils/handleCopyLink";
+import { fibonacciPoints, COLORS } from "./constants";
 
 export default function BoardPage() {
   const params = useParams();
@@ -40,127 +29,37 @@ export default function BoardPage() {
   const [showCopyNotification, setShowCopyNotification] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
 
-  useEffect(() => {
-    async function fetchBoard() {
-      const userId = localStorage.getItem(`board:${boardId}:userId`);
-      const res = await fetch(`/api/board/${boardId}?userId=${userId}`);
-      if (res.ok) {
-        const board = await res.json();
-        setUsers(board.users);
-        setShowResults(board.isRevealed);
+  const socketRef = useBoardSocket({
+    boardId,
+    userName,
+    hasJoined,
+    setUsers,
+    setCurrentUser,
+    setIsModerator,
+    setShowResults,
+    setSelectedPoint,
+  });
 
-        const foundUser = board.users.find((u: User) => u.id === userId);
-        if (foundUser) {
-          setCurrentUser(foundUser);
-          setIsModerator(foundUser.isModerator ?? false);
-          setSelectedPoint(foundUser.vote);
-        }
-      }
-    }
-    fetchBoard();
-  }, [boardId]);
+  useBoardFetch(
+    boardId,
+    currentUser,
+    setUsers,
+    setShowResults,
+    setCurrentUser,
+    setIsModerator,
+    setSelectedPoint
+  );
 
-  useEffect(() => {
-    const storedUserId = localStorage.getItem(`board:${boardId}:userId`);
-    const storedUserName = localStorage.getItem(`board:${boardId}:userName`);
-    const storedIsModerator = localStorage.getItem(
-      `board:${boardId}:isModerator`
-    );
-    if (storedUserId && storedUserName) {
-      setUserName(storedUserName);
-      setHasJoined(true);
-      setIsModerator(storedIsModerator === "true");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, users.length, currentUser]);
-
-  useEffect(() => {
-    if (!socketRef.current) {
-      const BACKEND_URL =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3005";
-      socketRef.current = io(BACKEND_URL);
-    }
-    const socket = socketRef.current;
-
-    if (userName && hasJoined) {
-      socket.emit("joinBoard", { boardId, userName });
-    }
-
-    const handleUserListUpdated = (users: User[]) => {
-      setUsers(users);
-      const found = users.find((u) => u.name === userName);
-      if (found) {
-        setCurrentUser(found);
-        setIsModerator(found.isModerator ?? false);
-        localStorage.setItem(`board:${boardId}:userId`, found.id);
-        localStorage.setItem(`board:${boardId}:userName`, found.name);
-        localStorage.setItem(
-          `board:${boardId}:isModerator`,
-          found.isModerator ? "true" : "false"
-        );
-      }
-    };
-
-    const handleShowResults = (data: {
-      id: string;
-      name: string;
-      isRevealed: boolean;
-      users: User[];
-    }) => {
-      setUsers(data.users);
-      setShowResults(true);
-    };
-
-    const handleBoardReset = (data: {
-      id: string;
-      name: string;
-      isRevealed: boolean;
-      users: User[];
-    }) => {
-      setUsers(data.users);
-      setShowResults(false);
-      setSelectedPoint(undefined);
-    };
-
-    socket.on("userListUpdated", handleUserListUpdated);
-    socket.on("votesRevealed", handleShowResults);
-    socket.on("boardReset", handleBoardReset);
-
-    return () => {
-      socket.off("userListUpdated", handleUserListUpdated);
-      socket.off("votesRevealed", handleShowResults);
-      socket.off("boardReset", handleBoardReset);
-    };
-  }, [boardId, userName, hasJoined]);
-
-  useEffect(() => {
-    async function fetchBoard() {
-      const res = await fetch(`/api/board/${boardId}`);
-      if (res.ok) {
-        const board = await res.json();
-        setUsers(board.users);
-        setShowResults(board.isRevealed);
-        if (currentUser) {
-          setIsModerator(
-            board.users.find((u: User) => u.id === currentUser.id)
-              ?.isModerator ?? false
-          );
-        }
-      }
-    }
-    fetchBoard();
-  }, [boardId]);
-
-  const handleCopyLink = () => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
-    url.searchParams.delete("userName");
-    navigator.clipboard.writeText(url.toString());
-    setShowCopyNotification(true);
-    setTimeout(() => setShowCopyNotification(false), 2000);
-  };
+  useRestoreUserSession(
+    boardId,
+    setUserName,
+    setHasJoined,
+    setIsModerator,
+    users,
+    currentUser,
+    searchParams
+  );
 
   const handleJoinBoard = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,26 +96,6 @@ export default function BoardPage() {
     }
   };
 
-  const getVoteData = (): VoteData[] => {
-    const votes = users
-      .filter(
-        (user) => user.hasVoted && user.vote !== undefined && user.vote !== null
-      )
-      .map((user) => user.vote);
-    const voteCounts: Record<string, number> = {};
-
-    votes.forEach((vote) => {
-      const key = vote?.toString() || "unknown";
-      voteCounts[key] = (voteCounts[key] || 0) + 1;
-    });
-
-    return Object.entries(voteCounts).map(([value, count], index) => ({
-      value,
-      count,
-      color: COLORS[index % COLORS.length],
-    }));
-  };
-
   if (!currentUser) {
     return (
       <JoinBoardForm
@@ -227,7 +106,7 @@ export default function BoardPage() {
     );
   }
 
-  const voteData = getVoteData();
+  const voteData = getVoteData(users, COLORS);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -250,7 +129,7 @@ export default function BoardPage() {
           </div>
           <button
             type="button"
-            onClick={handleCopyLink}
+            onClick={() => handleCopyLink(setShowCopyNotification)}
             className="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 dark:text-white font-semibold rounded transition-colors cursor-pointer"
           >
             Invite Others!
