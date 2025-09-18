@@ -10,7 +10,7 @@ export class BoardService {
     return this.prisma.$transaction(async (prisma) => {
       const board = await prisma.board.create({
         data: {
-          name: `Board ${Date.now()}`, // TODO: Allow custom names in future
+          name: `Board ${Date.now()}`,
         },
       });
 

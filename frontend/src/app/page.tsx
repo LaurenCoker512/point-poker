@@ -38,8 +38,8 @@ export default function Home() {
         }
       }
     }
+
     document.addEventListener("keydown", handleKeyDown);
-    // Focus the input when modal opens
     first?.focus();
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [showModal]);

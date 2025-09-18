@@ -71,7 +71,6 @@ export default function BoardPage() {
   const handleVote = async (point: string) => {
     setSelectedPoint(point);
 
-    // Emit vote via socket.io instead of REST
     const socket = socketRef.current;
     if (!socket) return;
 
