@@ -1,3 +1,4 @@
+import React from "react";
 import { Crown, Users, CheckCircle2 } from "lucide-react";
 import type { User } from "@/app/types/User";
 
