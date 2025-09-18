@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import JoinBoardForm from "../JoinBoardForm";
 
@@ -19,7 +19,6 @@ function Wrapper({
 }
 
 it("renders and submits the form", async () => {
-  const setUserName = jest.fn();
   const handleJoinBoard = jest.fn((e) => e.preventDefault());
 
   render(<Wrapper handleJoinBoard={handleJoinBoard} />);

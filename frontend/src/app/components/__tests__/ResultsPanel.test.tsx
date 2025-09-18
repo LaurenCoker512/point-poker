@@ -17,7 +17,7 @@ beforeAll(() => {
     ) {
       return;
     }
-    // @ts-ignore
+    // @ts-expect-error: allow fallback to original console.warn for non-matching messages
     return console.warn(msg);
   });
 });

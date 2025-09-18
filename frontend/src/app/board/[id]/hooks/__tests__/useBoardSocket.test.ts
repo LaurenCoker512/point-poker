@@ -1,6 +1,6 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { useBoardSocket } from "../useBoardSocket";
-import { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 
 jest.mock("socket.io-client", () => {
   const mSocket = {
@@ -35,7 +35,6 @@ describe("useBoardSocket", () => {
       })
     );
 
-    const { io } = require("socket.io-client");
     expect(io().emit).toHaveBeenCalledWith("joinBoard", {
       boardId: "board1",
       userName: "Alice",
