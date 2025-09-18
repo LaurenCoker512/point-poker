@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useModalFocusTrap } from "@/app/hooks/useModalFocusTrap";
 
 export default function Home() {
   const [userName, setUserName] = useState("");
@@ -12,38 +13,7 @@ export default function Home() {
   const modalRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Trap focus in modal when open
-  useEffect(() => {
-    if (!showModal) return;
-    const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
-      'input, button, [tabindex]:not([tabindex="-1"])'
-    );
-    const first = focusableElements?.[0];
-    const last = focusableElements?.[focusableElements.length - 1];
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setShowModal(false);
-      }
-      if (
-        e.key === "Tab" &&
-        focusableElements &&
-        focusableElements.length > 0
-      ) {
-        if (document.activeElement === last && !e.shiftKey) {
-          e.preventDefault();
-          first?.focus();
-        } else if (document.activeElement === first && e.shiftKey) {
-          e.preventDefault();
-          last?.focus();
-        }
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    first?.focus();
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showModal]);
+  useModalFocusTrap(showModal, modalRef, () => setShowModal(false));
 
   const handleCreateBoard = async (e: React.FormEvent) => {
     e.preventDefault();
