@@ -63,13 +63,28 @@ export class BoardService {
     return board;
   }
 
-  async findUserByName(boardId: string, userName: string) {
-    return this.prisma.user.findFirst({
-      where: {
-        boardId,
-        name: userName,
-      },
+  async isModerator(userId: string, boardId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, boardId },
     });
+    return !!user?.isModerator;
+  }
+
+  async joinUser(boardId: string, userName: string) {
+    let user = await this.prisma.user.findFirst({
+      where: { boardId, name: userName },
+    });
+
+    if (!user) {
+      const currentUsers = await this.prisma.user.findMany({
+        where: { boardId },
+      });
+      const isModerator = currentUsers.length === 0;
+      user = await this.prisma.user.create({
+        data: { name: userName, boardId, isModerator },
+      });
+    }
+    return user;
   }
 
   async submitVote(boardId: string, body: { userId: string; vote: string }) {
@@ -79,16 +94,6 @@ export class BoardService {
       data: { vote, hasVoted: true },
     });
     return { success: true, user };
-  }
-
-  async createUser(boardId: string, userName: string, isModerator: boolean) {
-    return this.prisma.user.create({
-      data: {
-        name: userName,
-        isModerator,
-        boardId,
-      },
-    });
   }
 
   async resetVotes(id: string) {

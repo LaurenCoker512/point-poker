@@ -15,12 +15,4 @@ export class BoardController {
   findOne(@Param('id') id: string, @Query('userId') userId?: string) {
     return this.boardService.findOne(id, userId);
   }
-
-  @Post(':id/vote')
-  submitVote(
-    @Param('id') boardId: string,
-    @Body() body: { userId: string; vote: string },
-  ) {
-    return this.boardService.submitVote(boardId, body);
-  }
 }

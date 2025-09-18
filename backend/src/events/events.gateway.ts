@@ -37,16 +37,6 @@ export class EventsGateway
 
   async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    // const userId = client.data.userId;
-    // const boardId = client.data.boardId;
-    // if (userId && boardId) {
-    //   await this.prisma.user.delete({
-    //     where: { id: userId },
-    //   });
-
-    //   const updatedBoard = await this.boardService.findOne(boardId);
-    //   client.to(boardId).emit('userListUpdated', updatedBoard.users);
-    // }
   }
 
   @SubscribeMessage('joinBoard')
@@ -56,21 +46,7 @@ export class EventsGateway
   ) {
     const { boardId, userName } = payload;
 
-    // Check if user already exists for this board
-    let user = await this.prisma.user.findFirst({
-      where: { boardId, name: userName },
-    });
-
-    if (!user) {
-      // Determine if this user should be moderator
-      const currentUsers = await this.prisma.user.findMany({
-        where: { boardId },
-      });
-      const isModerator = currentUsers.length === 0;
-      user = await this.prisma.user.create({
-        data: { name: userName, boardId, isModerator },
-      });
-    }
+    const user = await this.boardService.joinUser(boardId, userName);
 
     const board = await this.prisma.board.findUnique({
       where: { id: boardId },
@@ -102,10 +78,7 @@ export class EventsGateway
       return;
     }
 
-    await this.prisma.user.update({
-      where: { id: userId, boardId },
-      data: { vote: payload.vote, hasVoted: true },
-    });
+    await this.boardService.submitVote(boardId, { userId, vote: payload.vote });
 
     const updatedBoard = await this.boardService.findOne(boardId);
     client.to(boardId).emit('userListUpdated', updatedBoard.users);
@@ -122,11 +95,8 @@ export class EventsGateway
       return;
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId, boardId },
-    });
-
-    if (!user || !user.isModerator) {
+    const isMod = await this.boardService.isModerator(userId, boardId);
+    if (!isMod) {
       client.emit('error', { message: 'Not authorized' });
       return;
     }
@@ -148,11 +118,8 @@ export class EventsGateway
       return;
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId, boardId },
-    });
-
-    if (!user || !user.isModerator) {
+    const isMod = await this.boardService.isModerator(userId, boardId);
+    if (!isMod) {
       client.emit('error', { message: 'Not authorized' });
       return;
     }

@@ -25,6 +25,11 @@ describe('EventsGateway', () => {
   let boardServiceMock: Partial<BoardService> = {
     create: jest.fn().mockResolvedValue({ id: 1, title: 'Test Board' }),
     findOne: jest.fn().mockResolvedValue({ id: 1, title: 'Test Board' }),
+    isModerator: jest.fn().mockResolvedValue(true),
+    submitVote: jest.fn(),
+    joinUser: jest.fn(),
+    setRevealed: jest.fn(),
+    resetVotes: jest.fn(),
   };
   let mockSocket: any;
 
@@ -47,9 +52,7 @@ describe('EventsGateway', () => {
   });
 
   it('should create a new user and assign moderator if first user', async () => {
-    prismaServiceMock.user.findFirst.mockResolvedValue(null);
-    prismaServiceMock.user.findMany.mockResolvedValue([]);
-    prismaServiceMock.user.create.mockResolvedValue({
+    boardServiceMock.joinUser = jest.fn().mockResolvedValue({
       id: 'user1',
       name: 'Alice',
       boardId: 'board1',
@@ -71,15 +74,7 @@ describe('EventsGateway', () => {
       client as any,
     );
 
-    expect(prismaServiceMock.user.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          name: 'Alice',
-          boardId: 'board1',
-          isModerator: true,
-        }),
-      }),
-    );
+    expect(boardServiceMock.joinUser).toHaveBeenCalledWith('board1', 'Alice');
     expect(client.emit).toHaveBeenCalledWith('userJoined', { userId: 'user1' });
   });
 
@@ -96,9 +91,9 @@ describe('EventsGateway', () => {
 
     await gateway.handleSubmitVote({ vote: '3' }, client as any);
 
-    expect(prismaServiceMock.user.update).toHaveBeenCalledWith({
-      where: { id: 'user1', boardId: 'board1' },
-      data: { vote: '3', hasVoted: true },
+    expect(boardServiceMock.submitVote).toHaveBeenCalledWith('board1', {
+      userId: 'user1',
+      vote: '3',
     });
     expect(client.emit).toHaveBeenCalledWith('userListUpdated', [
       { id: 'user1', vote: '3', hasVoted: true },
@@ -111,10 +106,7 @@ describe('EventsGateway', () => {
       to: jest.fn(() => ({ emit: jest.fn() })),
       emit: jest.fn(),
     };
-    prismaServiceMock.user.findUnique.mockResolvedValue({
-      id: 'mod1',
-      isModerator: true,
-    });
+    boardServiceMock.isModerator = jest.fn().mockResolvedValue(true);
     boardServiceMock.setRevealed = jest.fn();
     boardServiceMock.findOne = jest
       .fn()
@@ -153,11 +145,9 @@ describe('EventsGateway', () => {
     const client = {
       data: { userId: 'user1', boardId: 'board1' },
       emit: jest.fn(),
+      to: jest.fn(() => ({ emit: jest.fn() })), // <-- Add this line
     };
-    prismaServiceMock.user.findUnique.mockResolvedValue({
-      id: 'user1',
-      isModerator: false,
-    });
+    boardServiceMock.isModerator = jest.fn().mockResolvedValue(false);
 
     await gateway.handleRevealVotes(client as any);
 
