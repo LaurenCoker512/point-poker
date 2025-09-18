@@ -53,5 +53,5 @@ export function useBoardFetch(
       }
     }
     fetchBoard();
-  }, [boardId]);
+  }, [boardId, currentUser, setUsers, setShowResults, setIsModerator]);
 }

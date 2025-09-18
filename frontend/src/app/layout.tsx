@@ -22,7 +22,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" type="image/png" href="/three-clubs_6770263.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
