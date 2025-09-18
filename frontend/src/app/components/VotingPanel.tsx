@@ -29,11 +29,12 @@ export default function VotingPanel({
           <button
             key={index}
             onClick={() => handleVote(point.toString())}
-            className={`p-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 cursor-pointer ${
+            className={`p-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 ${
               selectedPoint === point.toString()
                 ? "bg-primary-600 text-gray-900 dark:text-white shadow-lg"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
             }`}
+            aria-pressed={selectedPoint === point.toString()}
           >
             {point}
           </button>
@@ -41,7 +42,7 @@ export default function VotingPanel({
       </div>
 
       <div className="flex justify-between items-center">
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-sm text-gray-800 dark:text-gray-200">
           {selectedPoint
             ? `Selected: ${selectedPoint}`
             : "Choose your estimate"}
@@ -53,7 +54,8 @@ export default function VotingPanel({
           <button
             onClick={revealResults}
             disabled={users.every((user) => !user.hasVoted)}
-            className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
+            aria-disabled={users.every((user) => !user.hasVoted)}
           >
             Reveal Results
           </button>

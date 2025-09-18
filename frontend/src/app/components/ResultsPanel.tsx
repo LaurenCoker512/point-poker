@@ -50,6 +50,7 @@ export default function ResultsPanel({
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={18}
+        aria-hidden="true"
       >
         {voteData[index].count}
       </text>
@@ -63,7 +64,7 @@ export default function ResultsPanel({
       </h2>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="h-64">
+        <div className="h-64" aria-label="Vote distribution chart">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -75,9 +76,14 @@ export default function ResultsPanel({
                 nameKey="value"
                 label={renderLabel}
                 labelLine={false}
+                aria-label="Pie chart of vote distribution"
               >
                 {voteData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    aria-hidden="true"
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -96,6 +102,7 @@ export default function ResultsPanel({
                 <div
                   className="w-3 h-3 rounded-full mr-2"
                   style={{ backgroundColor: item.color }}
+                  aria-hidden="true"
                 ></div>
                 <span className="text-sm text-gray-900 dark:text-white">
                   {item.value} points
@@ -113,7 +120,7 @@ export default function ResultsPanel({
         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={resetVoting}
-            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-medium rounded-lg transition-colors cursor-pointer"
+            className="w-full px-6 py-3 bg-gray-600 hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600 text-white font-medium rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             Start New Vote
           </button>

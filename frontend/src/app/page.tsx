@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -8,6 +8,41 @@ export default function Home() {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Trap focus in modal when open
+  useEffect(() => {
+    if (!showModal) return;
+    const focusableElements = modalRef.current?.querySelectorAll<HTMLElement>(
+      'input, button, [tabindex]:not([tabindex="-1"])'
+    );
+    const first = focusableElements?.[0];
+    const last = focusableElements?.[focusableElements.length - 1];
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowModal(false);
+      }
+      if (
+        e.key === "Tab" &&
+        focusableElements &&
+        focusableElements.length > 0
+      ) {
+        if (document.activeElement === last && !e.shiftKey) {
+          e.preventDefault();
+          first?.focus();
+        } else if (document.activeElement === first && e.shiftKey) {
+          e.preventDefault();
+          last?.focus();
+        }
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    // Focus the input when modal opens
+    first?.focus();
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showModal]);
 
   const handleCreateBoard = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +74,7 @@ export default function Home() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           {/* Hero Section */}
           <div className="mb-16">
@@ -53,6 +88,8 @@ export default function Home() {
                     strokeWidth={1.5}
                     stroke="currentColor"
                     className="size-16 text-primary-900 dark:text-white"
+                    aria-hidden="true"
+                    focusable="false"
                   >
                     <path
                       strokeLinecap="round"
@@ -68,7 +105,7 @@ export default function Home() {
                   Just Pick 3!
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+              <p className="text-xl text-gray-800 dark:text-gray-200 mb-8 max-w-2xl mx-auto">
                 Streamline your agile planning with our minimalist story point
                 poker app. Focus on what matters - quick, consensus-driven
                 estimation.
@@ -80,7 +117,7 @@ export default function Home() {
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                 Ready to start estimating?
               </h2>
-              <p className="text-gray-600 dark:text-gray-300 mb-8">
+              <p className="text-gray-800 dark:text-gray-200 mb-8">
                 Create a new poker board and invite your team members to join
                 the session.
               </p>
@@ -88,7 +125,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
-                className="inline-flex items-center px-8 py-4 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-primary-600 dark:text-white font-semibold rounded-lg transition-colors duration-200 transform hover:scale-105 cursor-pointer"
+                className="inline-flex items-center px-8 py-4 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-primary-900 dark:text-white font-semibold rounded-lg transition-colors duration-200 transform hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 Create New Board
                 <svg
@@ -96,6 +133,8 @@ export default function Home() {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
                 >
                   <path
                     strokeLinecap="round"
@@ -106,7 +145,7 @@ export default function Home() {
                 </svg>
               </button>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
                 No account required • Free forever
               </p>
             </div>
@@ -127,7 +166,7 @@ export default function Home() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                   Create Board
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-800 dark:text-gray-400">
                   Click the button above to create a new estimation board
                 </p>
               </div>
@@ -140,7 +179,7 @@ export default function Home() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                   Invite Team
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-800 dark:text-gray-400">
                   Share the unique link with your team members
                 </p>
               </div>
@@ -153,18 +192,29 @@ export default function Home() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                   Start Voting
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
+                <p className="text-gray-800 dark:text-gray-400">
                   Discuss stories and vote simultaneously
                 </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div
+            ref={modalRef}
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 w-full max-w-md"
+          >
+            <h2
+              id="modal-title"
+              className="text-xl font-bold mb-4 text-gray-900 dark:text-white"
+            >
               Enter your name
             </h2>
             <form
@@ -174,29 +224,38 @@ export default function Home() {
               }}
             >
               {error && (
-                <div className="mb-2 text-red-600 dark:text-red-400 text-sm">
+                <div
+                  id="userName-error"
+                  className="mb-2 text-red-600 dark:text-red-400 text-sm"
+                >
                   {error}
                 </div>
               )}
+              <label htmlFor="userName" className="sr-only">
+                Your name
+              </label>
               <input
+                id="userName"
                 type="text"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder="Your name"
                 className="w-full px-4 py-2 mb-4 border border-gray-300 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-white"
                 required
+                aria-describedby={error ? "userName-error" : undefined}
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
+                  ref={cancelButtonRef}
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 cursor-pointer"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded text-gray-900 dark:text-white bg-white dark:bg-gray-800 font-semibold hover:bg-primary-700 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded text-primary-900 dark:text-white bg-primary-600 dark:bg-primary-500 font-semibold hover:bg-primary-700 dark:hover:bg-primary-600 cursor-pointer disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500"
                   disabled={userName.trim().length < 1}
                 >
                   Create

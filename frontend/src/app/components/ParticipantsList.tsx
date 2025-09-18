@@ -23,7 +23,11 @@ export default function ParticipantsList({
     <div className="lg:col-span-1">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center mb-6">
-          <Users className="w-5 h-5 text-gray-600 dark:text-gray-400 mr-2" />
+          <Users
+            className="w-5 h-5 text-gray-700 dark:text-gray-200 mr-2"
+            aria-hidden="true"
+            focusable="false"
+          />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Participants ({users.length})
           </h2>
@@ -44,7 +48,11 @@ export default function ParticipantsList({
                   {user.name}
                 </span>
                 {user.isModerator && (
-                  <Crown className="w-4 h-4 text-yellow-500 ml-2" />
+                  <Crown
+                    className="w-4 h-4 text-yellow-500 ml-2"
+                    aria-label="Moderator"
+                    focusable="false"
+                  />
                 )}
               </div>
 
@@ -55,10 +63,17 @@ export default function ParticipantsList({
                       {user.vote}
                     </span>
                   ) : (
-                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    <CheckCircle2
+                      className="w-4 h-4 text-green-500"
+                      aria-label="Voted"
+                      focusable="false"
+                    />
                   )
                 ) : (
-                  <div className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                  <div
+                    className="w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-600"
+                    aria-hidden="true"
+                  ></div>
                 )}
               </div>
             </div>
